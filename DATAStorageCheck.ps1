@@ -1,21 +1,22 @@
 #Variables 
-$vaultName = "HeuftVault"
-$secretNameAdmin = "Admin"
-$usernameAdmin = "administrator"
+$vaultName = "VAULTNAME"
+$secretNameAdmin = "SECRETNAMEADMIN"
+$usernameAdmin = "ADMINUSERNAME"
 $passwordAdmin = Get-Secret -Vault $vaultname -Name $secretNameAdmin
 $secretNameSMTP = 'noreply'
-$vaultpassword = (Import-CliXml ~/temp1.xml).Password
+$vaultpassword = (Import-CliXml ~/temp1.xml).Password #should be replaced by Azure KeyVault 
 Unlock-SecretStore -Password $vaultpassword
 $psCredentialAdmin = New-Object System.Management.Automation.PSCredential ($usernameAdmin, $passwordAdmin)
 $passwordSMTP = Get-Secret -Vault $vaultName -Name $secretNameSMTP -AsPlainText
+$ReportTarget = "Path\To\Target"
 $date = Get-Date -Format "dd-MM-yyyy"
 
 #Splatted Servername & Creds
 $foo = @{
-    Computername = 'DATA'
+    Computername = 'SERVERNAME'
     Credential   = $psCredentialAdmin
 }
-#Reads the available space on the disks
+#Reads the available space on the disks C, E, F, G, H, I, J and rounds the output to 2 decimals floating point
 $Output = Invoke-Command -Scriptblock { 
     $hostname = & hostname
     $result = Get-PSDrive -Name C, E, F, G, H, I, J | Select-Object Name, @{Name = "Free"; Expression = { [math]::Round($_.Free / 1GB, 2) } } 
@@ -41,12 +42,12 @@ if ($null -eq $Output)
 }
 else
 {
-    $SMTPServer = 'smtp.office365.com'
-    $To = 'it@heuft-backofenbau.de'
-    $Subject = "DATA Storage Report $date"
-    $EmailFrom = 'noreply@heuft1700.com'
+    $SMTPServer = 'SMTPADRESS' #smtp.office365.com
+    $To = 'Target@MAILADRESS'
+    $Subject = "Storage Report $date"
+    $EmailFrom = 'noreply@MAILADRESS'
     [string]$Body = $Output
-    $smtpUsername = "noreply@heuft1700.com"
+    $smtpUsername = "noreply@MAILADRESS"
     $securePassword = ConvertTo-SecureString -String $passwordSMTP -AsPlainText -Force
     $smtpCredentials = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $smtpUsername, $securePassword
     
@@ -59,9 +60,9 @@ else
         UseSsl     = $true
         Credential = $smtpCredentials
     }
-    #Do's
+    #Sends Mail to Target Mailadress and creates report at target location
     Send-MailMessage @SMTPMessage
-    $Output | Out-File -Path "C:\Temp\DataReport$date.txt" -Append 
+    $Output | Out-File -Path $ReportTarget -NoClobber
 }
 
 

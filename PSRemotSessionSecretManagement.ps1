@@ -9,28 +9,28 @@ Import-Module Microsoft.PowerShell.SecretStore
 
  
 
-### Registration (pls enter Admin Credentials in the Set-Secret)
-if (!(Get-SecretVault -Name HeuftVault | Select-Object -Property IsDefault) -eq "$true") {
-    Register-SecretVault -Name HeuftVault -ModuleName Microsoft.PowerShell.SecretStore
+### Registration (pls enter DesiredSecertCreds Credentials in the Set-Secret)
+if (!(Get-SecretVault -Name VaultName | Select-Object -Property IsDefault) -eq "$true") {
+    Register-SecretVault -Name VaultName -ModuleName Microsoft.PowerShell.SecretStore
     ###### zum einlesen des PW
     Get-Credential | Export-CliXml ~/temp1.xml
-    Set-Secret -Vault HeuftVault
+    Set-Secret -Vault VaultName
 }
 
 #Declaration
-$vaultName = "HeuftVault"
-$secretName = "Admin"
+$vaultName = "VaultName"
+$secretName = "DesiredSecertCreds"
 $vaultpassword = (Import-CliXml ~/temp1.xml).Password
 Unlock-SecretStore -Password $vaultpassword
 
-$username = "administrator"
+$username = "UserNameOfServerUser"
 $password = Get-Secret -Vault $vaultname -Name $secretName
 $psCredential = New-Object System.Management.Automation.PSCredential ($username, $password)
 
 #DO's
 
 $foo = @{
-    Computername = 'DATA'
+    Computername = 'ServerName'
     Credential   = $psCredential
 }
 

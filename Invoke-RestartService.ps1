@@ -8,23 +8,22 @@ Import-Module Microsoft.PowerShell.SecretStore
 
  
 
-### Registration (pls enter Admin Credentials in the Set-Secret)
-if (!(Get-SecretVault -Name HeuftVault | Select-Object -Property IsDefault) -eq "$true") {
-    Register-SecretVault -Name HeuftVault -ModuleName Microsoft.PowerShell.SecretStore
-    ###### zum einlesen des PW
-    Get-Credential | Export-CliXml ~/temp1.xml
-    Set-Secret -Vault HeuftVault
+### Registration (pls enter SECRETNAME Credentials in the Set-Secret)
+if (!(Get-SecretVault -Name VAULTNAME | Select-Object -Property IsDefault) -eq "$true") {
+    Register-SecretVault -Name VAULTNAME -ModuleName Microsoft.PowerShell.SecretStore #registers SecretVault
+    Get-Credential | Export-CliXml ~/temp1.xml # to read in password of the vault as a encrypted xml -> Azure KeyVault or Hashicorp Vault is best practice here
+    Set-Secret -Vault VAULTNAME #sets the desired secret
 }
 
-#Declaration
-$vaultName = "HeuftVault"
-$secretName = "Admin"
+#Declaration to unlock the Vault
+$vaultName = "VAULTNAME"
+$secretName = "SECRETNAME"
 $vaultpassword = (Import-CliXml ~/temp1.xml).Password
 Unlock-SecretStore -Password $vaultpassword
 
-$username = "administrator"
+$username = "SECRETNAME"
 $password = Get-Secret -Vault $vaultname -Name $secretName
 $psCredential = New-Object System.Management.Automation.PSCredential ($username, $password)
 
-#Invoke-Command -ComputerName "win7-apprint" -Credential $pscredential -Scriptblock {Get-Service -DisplayName "APplus*"} -AsJob
-Invoke-Command -ComputerName "win7-apprint" -Credential $pscredential -Scriptblock {Receive-Job -Id 1,2,3,4,5,6,7 -Keep}
+#Invoke-Command -ComputerName "SERVERNAME" -Credential $pscredential -Scriptblock {Get-Service -DisplayName "APplus*"} -AsJob
+Invoke-Command -ComputerName "SERVERNAME" -Credential $pscredential -Scriptblock {Receive-Job -Id 1,2,3,4,5,6,7 -Keep}
