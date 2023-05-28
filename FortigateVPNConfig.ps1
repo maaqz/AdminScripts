@@ -18,7 +18,7 @@ if ($ExeExists -eq $True -and $RegExists -ne $True)
 # Throw STD_ERR
 else 
 {
-   Write-Host "Die VPN ist bereits konfiguriert" -ErrorAction SilentlyContinue
+   Write-Output "Die VPN ist bereits konfiguriert" -ErrorAction SilentlyContinue
    exit 1
 }
 
